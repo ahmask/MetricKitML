@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/master.swiftdeps"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitMLCoreML/CoreMLEvaluationCase.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLEvaluationCase.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLEvaluationCase.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLEvaluationCase~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLEvaluationCase.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLEvaluationCase.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitMLCoreML/CoreMLLatencyRunner.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLLatencyRunner.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLLatencyRunner.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLLatencyRunner~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLLatencyRunner.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitMLCoreML.build/CoreMLLatencyRunner.dia"
+  }
+}

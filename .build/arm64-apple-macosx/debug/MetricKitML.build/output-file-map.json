@@ -1,0 +1,68 @@
+{
+  "": {
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/master.swiftdeps"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Metrics/LatencyMeasurer.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/LatencyMeasurer.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/LatencyMeasurer.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/LatencyMeasurer~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/LatencyMeasurer.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/LatencyMeasurer.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Metrics/P90Calculator.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/P90Calculator.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/P90Calculator.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/P90Calculator~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/P90Calculator.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/P90Calculator.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Metrics/PrecisionRecallF1.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/PrecisionRecallF1.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/PrecisionRecallF1.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/PrecisionRecallF1~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/PrecisionRecallF1.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/PrecisionRecallF1.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Models/EvaluationMetrics.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationMetrics.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationMetrics.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationMetrics~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationMetrics.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationMetrics.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Models/EvaluationReport.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReport.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReport.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReport~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReport.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReport.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Models/EvaluationResult.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationResult.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationResult.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationResult~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationResult.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationResult.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Protocols/EvaluationCase.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationCase.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationCase.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationCase~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationCase.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationCase.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Protocols/EvaluationReporter.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReporter.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReporter.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReporter~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReporter.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationReporter.dia"
+  },
+  "/Users/U777546/Work/ondevice-repos/MetricKitML/Sources/MetricKitML/Protocols/EvaluationRunner.swift": {
+    "dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationRunner.d",
+    "object": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationRunner.swift.o",
+    "swiftmodule": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationRunner~partial.swiftmodule",
+    "swift-dependencies": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationRunner.swiftdeps",
+    "diagnostics": "/Users/U777546/Work/ondevice-repos/MetricKitML/.build/arm64-apple-macosx/debug/MetricKitML.build/EvaluationRunner.dia"
+  }
+}
