@@ -74,6 +74,11 @@ public struct EvaluationResult: Sendable {
     /// Non-nil when this case failed with an error and the result is unreliable.
     public let error: String?
 
+    /// Optional free-text reasoning from the model (LLM path only).
+    /// Populated when the model returns a structured response with a reasoning field.
+    /// Only used for display and debugging — not included in aggregate metrics.
+    public let reasoning: String?
+
     // MARK: - Init
 
     public init(
@@ -88,7 +93,8 @@ public struct EvaluationResult: Sendable {
         usedFallback: Bool = false,
         confidence: String? = nil,
         itemErrorCount: Int? = nil,
-        error: String? = nil
+        error: String? = nil,
+        reasoning: String? = nil
     ) {
         self.id = id
         self.isCorrect = isCorrect
@@ -102,5 +108,6 @@ public struct EvaluationResult: Sendable {
         self.confidence = confidence
         self.itemErrorCount = itemErrorCount
         self.error = error
+        self.reasoning = reasoning
     }
 }
