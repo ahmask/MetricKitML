@@ -1,8 +1,64 @@
 # MetricKitML
 
-MetricKitML is a Swift Package that provides the evaluation backbone for on-device AI features — protocols, models, and metric calculators that work with CoreML and Apple Foundation Models without sending any data off-device.
+> On-device evaluation framework for Core ML and Apple Foundation Models.  
+> All computation runs on-device. No data leaves the device.
+
+[![Test MetricKitML Package](https://github.com/ahmask/MetricKitML/actions/workflows/test-package.yml/badge.svg)](https://github.com/ahmask/MetricKitML/actions/workflows/test-package.yml)
+[![Swift 6](https://img.shields.io/badge/Swift-6-orange)](https://swift.org)
+[![iOS 18+](https://img.shields.io/badge/iOS-18%2B-blue)](https://developer.apple.com/ios/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+---
+
+## What is MetricKitML?
+
+MetricKitML is a Swift Package that provides the evaluation backbone for on-device AI features. It defines the protocols, data models, and metric calculators that are shared across apps that evaluate Core ML models and Apple Intelligence Foundation Models.
+
+Instead of reimplementing accuracy, precision/recall/F1, latency measurement, and result aggregation in each app, MetricKitML provides a single, tested implementation that every on-device AI project can import.
+
+**What it is:**
+- Protocol scaffold for writing evaluation runners and reporters
+- Metric calculators: accuracy, P/R/F1, latency (P90, mean, std), false-positive/negative rates
+- Ready-made runners for CoreML and Foundation Models
+- Zero ML framework imports in the core target — it works in any iOS/macOS project
+
+**What it is not:**
+- A model training tool
+- A cloud evaluation service
+- A replacement for Xcode's model validation workflow
+
+---
+
+## Architecture
+
+MetricKitML ships three targets. Import only what you need:
+
+```
+MetricKitML (core)
+├── Protocols:  EvaluationCase, EvaluationRunner, EvaluationReporter
+├── Models:     EvaluationResult, EvaluationMetrics, EvaluationReport
+└── Metrics:    PrecisionRecallF1, LatencyMeasurer, P90Calculator, FalseRateCalculator
+
+MetricKitMLCoreML              → depends on MetricKitML + CoreML
+├── CoreMLTextCase
+└── CoreMLLatencyRunner
+
+MetricKitMLFoundation          → depends on MetricKitML only (no FoundationModels import)
+├── FoundationModelCase
+└── FoundationModelRunner
+```
+
+| Target | Use when |
+|---|---|
+| `MetricKitML` | Core protocols and metrics only. No ML imports. Works in any project. |
+| `MetricKitMLCoreML` | Your feature uses a `.mlmodel` / `.mlpackage` for classification. |
+| `MetricKitMLFoundation` | Your feature uses `LanguageModelSession` (Apple Foundation Models). |
+
+---
 
 ## Installation
+
+### Swift Package Manager
 
 Add to your `Package.swift`:
 
@@ -10,66 +66,226 @@ Add to your `Package.swift`:
 .package(url: "https://github.com/ahmask/MetricKitML", from: "1.0.0")
 ```
 
-Or add it as a local package during development:
+Then add the target you need to your app or library target:
+
+```swift
+.target(
+    name: "MyApp",
+    dependencies: [
+        .product(name: "MetricKitML",            package: "MetricKitML"),
+        .product(name: "MetricKitMLCoreML",       package: "MetricKitML"),  // optional
+        .product(name: "MetricKitMLFoundation",   package: "MetricKitML"),  // optional
+    ]
+)
+```
+
+### Xcode
+
+**File › Add Package Dependencies…** → paste `https://github.com/ahmask/MetricKitML`
+
+For local development:
 
 ```swift
 .package(path: "../MetricKitML")
 ```
 
-## Which target to import
+---
 
-| Target | Use when |
-|---|---|
-| `MetricKitML` | Core protocols and models only — no ML imports. Works in any project. |
-| `MetricKitMLCoreML` | Your feature uses CoreML for classification (e.g. `.mlmodel`). |
-| `MetricKitMLFoundation` | Your feature uses Apple Foundation Models (`LanguageModelSession`). |
+## Concepts
 
-## Minimal working example
+The evaluation flow has three roles:
+
+```
+EvaluationCase  ──►  EvaluationRunner  ──►  [EvaluationResult]  ──►  EvaluationReporter  ──►  EvaluationReport
+   input/label        run one case            raw per-case outcome      aggregate metrics          final report
+```
+
+1. **`EvaluationCase`** — describes one test case: an `id`, `input`, and `expectedOutput`.
+2. **`EvaluationRunner`** — calls your model for one case and returns an `EvaluationResult` (always — errors are captured into `result.error` rather than thrown).
+3. **`EvaluationReporter`** — aggregates a batch of `EvaluationResult` values into an `EvaluationReport` with computed `EvaluationMetrics` and a baseline pass/fail verdict.
+
+---
+
+## Usage
+
+### 1 — Core ML classification
+
+```swift
+import MetricKitML
+import MetricKitMLCoreML
+
+// Define test cases from your labeled dataset
+let cases = dataset.map {
+    CoreMLTextCase(id: "\($0.id)", input: $0.text, expectedOutput: $0.label)
+}
+
+// Create a runner with your CoreML model's classify closure
+let runner = CoreMLLatencyRunner { text in
+    try myNLModel.predictedLabel(for: text) ?? ""
+}
+
+// Run all cases
+var results: [EvaluationResult] = []
+for testCase in cases {
+    let result = try await runner.run(testCase)
+    results.append(result)
+}
+
+// Compute metrics
+let labels = MyLabel.allCases.map(\.rawValue)
+let metrics = PrecisionRecallF1.compute(from: results, labels: labels)
+
+print("Accuracy: \(metrics.accuracy)")
+print("Macro F1: \(metrics.macroF1)")
+```
+
+### 2 — Foundation Models (Apple Intelligence)
+
+```swift
+import Foundation
+import FoundationModels
+import MetricKitML
+import MetricKitMLFoundation
+
+// Availability guard — always use the enum pattern, not isAvailable (Bool)
+guard case .available = SystemLanguageModel.default.availability else { return }
+
+let instructions = "Classify the input as positive or negative. Reply with one word only."
+
+let runner = FoundationModelRunner { input in
+    let session = LanguageModelSession(instructions: instructions)
+    let response = try await session.respond(to: input)
+    let label = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+    return .init(predicted: label)
+}
+
+let cases = dataset.map {
+    FoundationModelCase(id: $0.id, input: $0.text, expectedOutput: $0.expectedLabel)
+}
+
+var results: [EvaluationResult] = []
+for testCase in cases {
+    let result = try await runner.run(testCase)
+    results.append(result)
+}
+
+let metrics = PrecisionRecallF1.compute(from: results, labels: ["positive", "negative"])
+```
+
+### 3 — Latency measurement
+
+`LatencyMeasurer` provides thread-safe, monotonic wall-clock timing:
 
 ```swift
 import MetricKitML
 
-// 1. Define a test case
-struct MyCase: EvaluationCase {
-    let id: String
-    let input: String
-    let expectedOutput: String
+// Returns (result, latencyMs) — rethrows on error, latency is 0 on error
+let (response, latencyMs) = await LatencyMeasurer.measure {
+    try await session.respond(to: prompt)
 }
 
-// 2. Implement a runner
-struct MyRunner: EvaluationRunner {
-    func run(_ testCase: MyCase) async throws -> EvaluationResult {
-        let (predicted, latencyMs) = await LatencyMeasurer.measure {
-            myModel.predict(testCase.input)
-        }
-        return EvaluationResult(
-            id: testCase.id,
-            isCorrect: predicted == testCase.expectedOutput,
-            latencyMs: latencyMs,
-            predictedLabel: predicted,
-            expectedLabel: testCase.expectedOutput
+// Always records elapsed time, even when the operation throws
+var latencyMs: Double = 0
+do {
+    let response = try await LatencyMeasurer.measureCapturingErrors(into: &latencyMs) {
+        try await session.respond(to: prompt)
+    }
+} catch {
+    print("Error after \(latencyMs) ms: \(error)")
+}
+```
+
+### 4 — P90 and descriptive statistics
+
+```swift
+import MetricKitML
+
+let latencies = results.map(\.latencyMs)
+
+let mean = P90Calculator.mean(latencies)           // arithmetic mean
+let p90  = P90Calculator.p90(latencies)            // 90th percentile
+let std  = P90Calculator.standardDeviation(latencies)
+```
+
+### 5 — Implement a custom EvaluationReporter
+
+```swift
+import MetricKitML
+
+struct MyReporter: EvaluationReporter {
+    let minAccuracy: Double = 0.85
+
+    func report(from results: [EvaluationResult], featureName: String) -> EvaluationReport {
+        let labels  = MyLabel.allCases.map(\.rawValue)
+        let prf     = PrecisionRecallF1.compute(from: results, labels: labels)
+        let lats    = results.map(\.latencyMs)
+
+        let metrics = EvaluationMetrics(
+            totalCases:        results.count,
+            passRate:          prf.accuracy,
+            errorCount:        results.filter { $0.error != nil }.count,
+            accuracy:          prf.accuracy,
+            macroPrecision:    prf.macroPrecision,
+            macroRecall:       prf.macroRecall,
+            macroF1:           prf.macroF1,
+            weightedPrecision: prf.weightedPrecision,
+            weightedRecall:    prf.weightedRecall,
+            weightedF1:        prf.weightedF1,
+            latencyMsMean:     P90Calculator.mean(lats),
+            latencyMsP90:      P90Calculator.p90(lats)
+        )
+
+        return EvaluationReport(
+            featureName:         featureName,
+            metrics:             metrics,
+            results:             results,
+            passedBaseline:      prf.accuracy >= minAccuracy,
+            baselineDescription: "accuracy >= \(minAccuracy)"
         )
     }
 }
-
-// 3. Run all cases and compute metrics
-let results = try await testCases.asyncMap { try await MyRunner().run($0) }
-let metrics = PrecisionRecallF1.compute(from: results, labels: MyLabel.allRawValues)
 ```
 
-## How to add a new feature evaluation
+---
 
-1. Define your test case struct conforming to `EvaluationCase`.
-2. Implement `EvaluationRunner.run(_:)` — call your model, measure latency, return `EvaluationResult`.
-3. Implement `EvaluationReporter.report(from:featureName:)` — compute `EvaluationMetrics` and decide `passedBaseline`.
-4. Wire the reporter to your evaluation UI or CI workflow.
+## Example: FeedbackClassification
+
+The `OnDeviceAIExamples/FeedbackClassification` example app demonstrates how MetricKitML is used in a real iOS project:
+
+```
+FeedbackClassification/
+└── Evaluation/
+    ├── FeedbackClassificationCase.swift          → EvaluationCase wrapping LabeledExample
+    ├── FeedbackClassificationEvaluationRunner.swift → CoreML runner (CoreMLLatencyRunner)
+    ├── FeedbackClassificationLLMRunner.swift     → Foundation Models runner (EvaluationRunner)
+    └── FeedbackClassificationReporter.swift      → EvaluationReporter, baseline = 85%
+```
+
+The app's `LLMEvaluator` (SwiftUI boundary layer) uses:
+- **`FeedbackClassificationLLMRunner`** to run each of 72 labeled queries through the on-device model
+- **`PrecisionRecallF1.compute()`** to calculate accuracy, macro/weighted P/R/F1
+- **`P90Calculator.mean()`** for average latency
+
+This produces metrics consistent with the CMLVSLLM reference app (83.3% accuracy, ~935 ms avg latency).
+
+---
 
 ## Privacy
 
-All evaluation runs entirely on-device. No user input, model output, or evaluation data is ever sent to a network endpoint or written outside the test bundle. The privacy comment `// MetricKitML — all processing is on-device. No data leaves the device.` appears at the top of every public file.
+> **All evaluation runs entirely on-device. No user input, model output, or evaluation data is ever sent to a network endpoint or written outside the test bundle.**
+
+The privacy comment `// MetricKitML — all processing is on-device. No data leaves the device.` appears at the top of every public file as a reminder.
+
+---
 
 ## CI
 
 The `test-package.yml` workflow runs `swift test` on every push and pull request to `main`.
 
 [![Test MetricKitML Package](https://github.com/ahmask/MetricKitML/actions/workflows/test-package.yml/badge.svg)](https://github.com/ahmask/MetricKitML/actions/workflows/test-package.yml)
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
