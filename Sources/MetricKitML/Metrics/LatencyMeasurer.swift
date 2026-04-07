@@ -40,4 +40,28 @@ public enum LatencyMeasurer {
         latencyMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
         return result
     }
+
+    /// Run `operation` and always record elapsed time into `latencyMs`, even if the
+    /// operation throws. This ensures error cases show real latency in evaluation reports.
+    ///
+    /// - Parameters:
+    ///   - latencyMs: Binding that receives elapsed wall-clock time in milliseconds,
+    ///                regardless of whether `operation` succeeds or throws.
+    ///   - operation: The async throwing operation to measure.
+    /// - Throws: Any error thrown by `operation`.
+    /// - Returns: The result of `operation` on success.
+    public static func measureCapturingErrors<T: Sendable>(
+        into latencyMs: inout Double,
+        operation: @Sendable () async throws -> T
+    ) async throws -> T {
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            let result = try await operation()
+            latencyMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
+            return result
+        } catch {
+            latencyMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
+            throw error
+        }
+    }
 }
