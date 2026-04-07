@@ -33,6 +33,11 @@ public struct EvaluationReport: Sendable {
     /// When this report was generated.
     public let generatedAt: Date
 
+    /// Number of cases where `isCorrect == true`.
+    public var passCount: Int {
+        results.filter(\.isCorrect).count
+    }
+
     // MARK: - Init
 
     public init(

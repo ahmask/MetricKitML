@@ -85,6 +85,34 @@ public struct EvaluationMetrics: Sendable {
     /// hallucinationCount / responded cases. `nil` for CoreML.
     public let hallucinationRate: Double?
 
+    // MARK: - Pipeline quality (TopicFinder)
+
+    /// Fraction of cases where the top result was `certain` or `most_likely`.
+    /// Only applicable to features that return ranked results with confidence labels.
+    public let confidenceAccuracy: Double?
+
+    /// Fraction of cases where the keyword safety-net fired instead of the model. `nil` when N/A.
+    public let fallbackRate: Double?
+
+    // MARK: - Packing list quality (PackingList)
+
+    /// Mean number of items outside the canonical allow-list per case. `nil` when N/A.
+    public let avgItemErrorCount: Double?
+
+    // MARK: - Binary classification / detection
+
+    /// Number of false positives (predicted positive, actual negative). `nil` when N/A.
+    public let falsePositiveCount: Int?
+
+    /// Number of false negatives (predicted negative, actual positive). `nil` when N/A.
+    public let falseNegativeCount: Int?
+
+    /// FP / (FP + TN). `nil` when N/A or when TN count cannot be determined.
+    public let falsePositiveRate: Double?
+
+    /// FN / (FN + TP). `nil` when N/A or when TP count cannot be determined.
+    public let falseNegativeRate: Double?
+
     // MARK: - Init
 
     public init(
@@ -107,7 +135,14 @@ public struct EvaluationMetrics: Sendable {
         secondaryScoreStd: Double? = nil,
         secondaryScoreP90: Double? = nil,
         hallucinationCount: Int? = nil,
-        hallucinationRate: Double? = nil
+        hallucinationRate: Double? = nil,
+        confidenceAccuracy: Double? = nil,
+        fallbackRate: Double? = nil,
+        avgItemErrorCount: Double? = nil,
+        falsePositiveCount: Int? = nil,
+        falseNegativeCount: Int? = nil,
+        falsePositiveRate: Double? = nil,
+        falseNegativeRate: Double? = nil
     ) {
         self.totalCases = totalCases
         self.passRate = passRate
@@ -129,5 +164,12 @@ public struct EvaluationMetrics: Sendable {
         self.secondaryScoreP90 = secondaryScoreP90
         self.hallucinationCount = hallucinationCount
         self.hallucinationRate = hallucinationRate
+        self.confidenceAccuracy = confidenceAccuracy
+        self.fallbackRate = fallbackRate
+        self.avgItemErrorCount = avgItemErrorCount
+        self.falsePositiveCount = falsePositiveCount
+        self.falseNegativeCount = falseNegativeCount
+        self.falsePositiveRate = falsePositiveRate
+        self.falseNegativeRate = falseNegativeRate
     }
 }

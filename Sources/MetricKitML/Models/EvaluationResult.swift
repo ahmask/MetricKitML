@@ -53,6 +53,22 @@ public struct EvaluationResult: Sendable {
     /// Only meaningful for LLM-based classification paths.
     public let hallucinationFlag: Bool
 
+    // MARK: - Pipeline / fallback (TopicFinder)
+
+    /// `true` when the keyword safety-net fired instead of the model result.
+    /// Only meaningful for pipeline-based features (e.g. TopicFinder).
+    public let usedFallback: Bool
+
+    /// Confidence label of the top result, e.g. "certain", "most_likely".
+    /// Only populated for features that return a ranked result with confidence.
+    public let confidence: String?
+
+    // MARK: - Packing list (PackingList)
+
+    /// Number of items outside the canonical allow-list (diagnostic metric).
+    /// Only populated for packing-list features.
+    public let itemErrorCount: Int?
+
     // MARK: - Error
 
     /// Non-nil when this case failed with an error and the result is unreliable.
@@ -69,6 +85,9 @@ public struct EvaluationResult: Sendable {
         score: Double? = nil,
         secondaryScore: Double? = nil,
         hallucinationFlag: Bool = false,
+        usedFallback: Bool = false,
+        confidence: String? = nil,
+        itemErrorCount: Int? = nil,
         error: String? = nil
     ) {
         self.id = id
@@ -79,6 +98,9 @@ public struct EvaluationResult: Sendable {
         self.score = score
         self.secondaryScore = secondaryScore
         self.hallucinationFlag = hallucinationFlag
+        self.usedFallback = usedFallback
+        self.confidence = confidence
+        self.itemErrorCount = itemErrorCount
         self.error = error
     }
 }
