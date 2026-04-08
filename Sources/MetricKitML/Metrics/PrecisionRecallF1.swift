@@ -43,7 +43,35 @@ public enum PrecisionRecallF1 {
 
     // MARK: - Full output
 
-    /// Result struct holding per-class breakdown and aggregate scalars.
+    /// Confusion matrix for a multi-class classification run.
+    ///
+    /// `matrix[i][j]` is the number of cases where the expected label was
+    /// `labels[i]` and the predicted label was `labels[j]`.
+    /// The diagonal contains correct predictions; off-diagonal entries are errors.
+    ///
+    /// Example — 3-class problem, `labels = ["cat", "dog", "bird"]`:
+    /// ```
+    ///        predicted →
+    ///              cat  dog  bird
+    /// expected cat [ 5,   1,   0 ]
+    ///          dog [ 0,   4,   1 ]
+    ///         bird [ 1,   0,   3 ]
+    /// ```
+    public struct ConfusionMatrix: Sendable {
+        /// The ordered label list used as both row (expected) and column (predicted) axes.
+        public let labels: [String]
+        /// `matrix[row][col]` = count(expected == labels[row] && predicted == labels[col]).
+        public let matrix: [[Int]]
+
+        /// Returns the count for a specific expected / predicted label pair.
+        public func count(expected: String, predicted: String) -> Int {
+            guard let row = labels.firstIndex(of: expected),
+                  let col = labels.firstIndex(of: predicted) else { return 0 }
+            return matrix[row][col]
+        }
+    }
+
+    /// Result struct holding per-class breakdown, aggregate scalars, and a confusion matrix.
     public struct Output: Sendable {
         public let accuracy: Double
         public let classMetrics: [ClassMetrics]
@@ -53,6 +81,8 @@ public enum PrecisionRecallF1 {
         public let weightedPrecision: Double
         public let weightedRecall: Double
         public let weightedF1: Double
+        /// Full confusion matrix. Row = expected label, column = predicted label.
+        public let confusionMatrix: ConfusionMatrix
     }
 
     // MARK: - Compute
@@ -98,6 +128,18 @@ public enum PrecisionRecallF1 {
             (wp, wr, wf) = (0, 0, 0)
         }
 
+        // Build confusion matrix: matrix[i][j] = count(expected==labels[i] && predicted==labels[j])
+        let labelIndex: [String: Int] = Dictionary(uniqueKeysWithValues: labels.enumerated().map { ($1, $0) })
+        var matrix = Array(repeating: Array(repeating: 0, count: labels.count), count: labels.count)
+        for result in results {
+            guard let expected = result.expectedLabel,
+                  let predicted = result.predictedLabel,
+                  let row = labelIndex[expected],
+                  let col = labelIndex[predicted] else { continue }
+            matrix[row][col] += 1
+        }
+        let confusionMatrix = ConfusionMatrix(labels: labels, matrix: matrix)
+
         return Output(
             accuracy: accuracy,
             classMetrics: classMetrics,
@@ -106,7 +148,8 @@ public enum PrecisionRecallF1 {
             macroF1: macroF1,
             weightedPrecision: wp,
             weightedRecall: wr,
-            weightedF1: wf
+            weightedF1: wf,
+            confusionMatrix: confusionMatrix
         )
     }
 }

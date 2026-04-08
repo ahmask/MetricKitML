@@ -37,6 +37,16 @@ let package = Package(
             name: "MetricKitMLTests",
             dependencies: ["MetricKitML"],
             path: "Tests/MetricKitMLTests"
+        ),
+        .testTarget(
+            name: "MetricKitMLCoreMLTests",
+            dependencies: ["MetricKitMLCoreML"],
+            path: "Tests/MetricKitMLCoreMLTests"
+        ),
+        .testTarget(
+            name: "MetricKitMLFoundationTests",
+            dependencies: ["MetricKitMLFoundation"],
+            path: "Tests/MetricKitMLFoundationTests"
         )
     ]
 )

@@ -56,6 +56,21 @@ public struct FoundationModelRunner: EvaluationRunner, Sendable {
         self.generate = generate
     }
 
+    /// Run a single Foundation Model test case, measure latency, and return a result.
+    ///
+    /// ## `isCorrect` semantics
+    ///
+    /// The determination of correctness depends on what your `generate` closure returns:
+    ///
+    /// - **When `score` is provided** (e.g. Jaccard similarity from TopicFinder):
+    ///   `isCorrect = score >= 1.0` — exact match only.
+    ///
+    /// - **When `score` is `nil`** (e.g. plain text classification):
+    ///   `isCorrect = predicted.lowercased().contains(expectedOutput.lowercased())`
+    ///   This is a case-insensitive substring match. It is intentionally lenient to
+    ///   handle LLM outputs that include light surrounding text (e.g. "Category: baggage").
+    ///   If your feature requires exact string equality, normalise the predicted output
+    ///   inside your `generate` closure before returning it, and leave `score` nil.
     public func run(_ testCase: FoundationModelCase) async throws -> EvaluationResult {
         var latencyMs: Double = 0
         do {

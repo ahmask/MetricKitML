@@ -207,7 +207,44 @@ let p90  = P90Calculator.p90(latencies)            // 90th percentile
 let std  = P90Calculator.standardDeviation(latencies)
 ```
 
-### 5 — Implement a custom EvaluationReporter
+### 5 — Use `StandardClassificationReporter` (new in 1.1.0)
+
+For multi-class text classification, skip writing your own reporter:
+
+```swift
+import MetricKitML
+
+let labels = MyCategory.allCases.map(\.rawValue)
+let reporter = StandardClassificationReporter(labels: labels, minimumAccuracy: 0.85)
+let report = reporter.report(from: results, featureName: "MyFeature")
+
+print(report.passedBaseline)           // true / false
+print(report.metrics.accuracy ?? 0)   // e.g. 0.847
+print(report.metrics.macroF1 ?? 0)    // e.g. 0.844
+```
+
+For features that need hallucination tracking, custom baselines, or extended metrics,
+write a feature-specific `EvaluationReporter` that calls `PrecisionRecallF1.compute()` directly.
+
+### 6 — Read the confusion matrix
+
+```swift
+import MetricKitML
+
+let prf = PrecisionRecallF1.compute(from: results, labels: labels)
+let cm = prf.confusionMatrix
+
+// Count misclassifications between two specific labels
+let misclassified = cm.count(expected: "baggage", predicted: "checkin")
+
+// Iterate the full matrix
+for (rowIdx, label) in cm.labels.enumerated() {
+    let row = cm.matrix[rowIdx]
+    print("\(label): \(row)")
+}
+```
+
+### 7 — Implement a custom EvaluationReporter
 
 ```swift
 import MetricKitML

@@ -101,6 +101,29 @@ final class MetricsTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(latencyMs, 0.0)
     }
 
+    func test_latencyMeasurer_measureCapturingErrors_onSuccess_recordsLatency() async throws {
+        var latencyMs: Double = 0
+        let result = try await LatencyMeasurer.measureCapturingErrors(into: &latencyMs) {
+            "success"
+        }
+        XCTAssertEqual(result, "success")
+        XCTAssertGreaterThanOrEqual(latencyMs, 0.0)
+    }
+
+    func test_latencyMeasurer_measureCapturingErrors_onError_stillRecordsLatency() async throws {
+        struct TestError: Error {}
+        var latencyMs: Double = 0
+        do {
+            _ = try await LatencyMeasurer.measureCapturingErrors(into: &latencyMs) {
+                throw TestError()
+            }
+            XCTFail("Expected error to be thrown")
+        } catch {
+            // Latency must have been recorded even though the operation failed
+            XCTAssertGreaterThanOrEqual(latencyMs, 0.0)
+        }
+    }
+
     // MARK: - FalseRateCalculator (binary)
 
     func test_falseRateCalculator_binary_allCorrect() {
@@ -230,5 +253,103 @@ final class MetricsTests: XCTestCase {
             passedBaseline: true
         )
         XCTAssertEqual(report.passCount, 2)
+    }
+
+    // MARK: - PrecisionRecallF1 confusion matrix
+
+    func test_confusionMatrix_perfectPredictions() {
+        let results = [
+            EvaluationResult(id: "1", isCorrect: true, latencyMs: 10, predictedLabel: "cat", expectedLabel: "cat"),
+            EvaluationResult(id: "2", isCorrect: true, latencyMs: 10, predictedLabel: "dog", expectedLabel: "dog"),
+        ]
+        let output = PrecisionRecallF1.compute(from: results, labels: ["cat", "dog"])
+        let cm = output.confusionMatrix
+
+        XCTAssertEqual(cm.labels, ["cat", "dog"])
+        XCTAssertEqual(cm.count(expected: "cat", predicted: "cat"), 1)
+        XCTAssertEqual(cm.count(expected: "dog", predicted: "dog"), 1)
+        XCTAssertEqual(cm.count(expected: "cat", predicted: "dog"), 0)
+        XCTAssertEqual(cm.count(expected: "dog", predicted: "cat"), 0)
+    }
+
+    func test_confusionMatrix_withErrors() {
+        // cat predicted as dog, dog predicted correctly
+        let results = [
+            EvaluationResult(id: "1", isCorrect: false, latencyMs: 10, predictedLabel: "dog", expectedLabel: "cat"),
+            EvaluationResult(id: "2", isCorrect: true,  latencyMs: 10, predictedLabel: "dog", expectedLabel: "dog"),
+        ]
+        let output = PrecisionRecallF1.compute(from: results, labels: ["cat", "dog"])
+        let cm = output.confusionMatrix
+
+        XCTAssertEqual(cm.count(expected: "cat", predicted: "dog"), 1) // misclassification
+        XCTAssertEqual(cm.count(expected: "dog", predicted: "dog"), 1) // correct
+        XCTAssertEqual(cm.count(expected: "cat", predicted: "cat"), 0)
+    }
+
+    func test_confusionMatrix_unknownLabelReturnsZero() {
+        let results = [
+            EvaluationResult(id: "1", isCorrect: true, latencyMs: 10, predictedLabel: "cat", expectedLabel: "cat"),
+        ]
+        let output = PrecisionRecallF1.compute(from: results, labels: ["cat", "dog"])
+        let cm = output.confusionMatrix
+
+        XCTAssertEqual(cm.count(expected: "unknown", predicted: "cat"), 0)
+    }
+
+    // MARK: - StandardClassificationReporter
+
+    func test_standardClassificationReporter_passesWhenAboveThreshold() {
+        // 9/10 correct → 90% accuracy, threshold 0.85 → should pass
+        let results = (1...9).map {
+            EvaluationResult(id: "\($0)", isCorrect: true,  latencyMs: 10, predictedLabel: "A", expectedLabel: "A")
+        } + [EvaluationResult(id: "10", isCorrect: false, latencyMs: 10, predictedLabel: "B", expectedLabel: "A")]
+
+        let reporter = StandardClassificationReporter(labels: ["A", "B"], minimumAccuracy: 0.85)
+        let report = reporter.report(from: results, featureName: "TestFeature")
+
+        XCTAssertTrue(report.passedBaseline)
+        XCTAssertEqual(report.metrics.accuracy ?? 0, 0.9, accuracy: 0.001)
+        XCTAssertEqual(report.featureName, "TestFeature")
+    }
+
+    func test_standardClassificationReporter_failsWhenBelowThreshold() {
+        // 5/10 correct → 50% accuracy, threshold 0.85 → should fail
+        let results = (1...5).map {
+            EvaluationResult(id: "\($0)", isCorrect: true,  latencyMs: 10, predictedLabel: "A", expectedLabel: "A")
+        } + (6...10).map {
+            EvaluationResult(id: "\($0)", isCorrect: false, latencyMs: 10, predictedLabel: "B", expectedLabel: "A")
+        }
+
+        let reporter = StandardClassificationReporter(labels: ["A", "B"], minimumAccuracy: 0.85)
+        let report = reporter.report(from: results, featureName: "TestFeature")
+
+        XCTAssertFalse(report.passedBaseline)
+    }
+
+    func test_standardClassificationReporter_customThreshold() {
+        // 6/10 correct → 60% accuracy, threshold 0.5 → should pass
+        let results = (1...6).map {
+            EvaluationResult(id: "\($0)", isCorrect: true,  latencyMs: 5, predictedLabel: "A", expectedLabel: "A")
+        } + (7...10).map {
+            EvaluationResult(id: "\($0)", isCorrect: false, latencyMs: 5, predictedLabel: "B", expectedLabel: "A")
+        }
+
+        let reporter = StandardClassificationReporter(labels: ["A", "B"], minimumAccuracy: 0.5)
+        let report = reporter.report(from: results, featureName: "Custom")
+
+        XCTAssertTrue(report.passedBaseline)
+        XCTAssertEqual(report.baselineDescription, "accuracy >= 0.5")
+    }
+
+    func test_standardClassificationReporter_includesLatencyMetrics() {
+        let results = [
+            EvaluationResult(id: "1", isCorrect: true, latencyMs: 100, predictedLabel: "A", expectedLabel: "A"),
+            EvaluationResult(id: "2", isCorrect: true, latencyMs: 200, predictedLabel: "A", expectedLabel: "A"),
+        ]
+        let reporter = StandardClassificationReporter(labels: ["A"])
+        let report = reporter.report(from: results, featureName: "Latency")
+
+        XCTAssertEqual(report.metrics.latencyMsMean, 150.0, accuracy: 0.001)
+        XCTAssertGreaterThan(report.metrics.latencyMsP90, 0)
     }
 }
